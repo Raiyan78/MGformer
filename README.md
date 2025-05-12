@@ -48,7 +48,7 @@ Each Transformer layer is extended with:
 | FSU-AD   | **97.85%** | **97.84%** | 99.74% |
 
 ![MACs vs Accuracy](image/model-size-aut-ad-1.png) <!-- 📌 Insert Figure 4 from the paper -->
-(image/model-size-fsu-ad-1.png)
+![MACs vs Accuracy](image/model-size-fsu-ad-1.png)
 
 ---
 
