@@ -23,7 +23,7 @@ MGFormer consists of two main components:
 ### 1. Multi-Granular Token Encoder (MgTE)
 Extracts temporal features at multiple scales, then applies spatial convolution across EEG channels.
 
-![MgTE Module](path/to/mgte_diagram.png) <!-- 📌 Insert Figure 2 from the paper -->
+![MgTE Module](image/token%20encoder-1.png) <!-- 📌 Insert Figure 2 from the paper -->
 
 ### 2. Hybrid Feature Fusion (HFF)
 Each Transformer layer is extended with:
@@ -47,7 +47,8 @@ Each Transformer layer is extended with:
 | AUT-AD   | **70.48%** | **70.50%** | 78.51% |
 | FSU-AD   | **97.85%** | **97.84%** | 99.74% |
 
-![MACs vs Accuracy](path/to/parameter_efficiency_chart.png) <!-- 📌 Insert Figure 4 from the paper -->
+![MACs vs Accuracy](image/model-size-aut-ad-1.png) <!-- 📌 Insert Figure 4 from the paper -->
+(image/model-size-fsu-ad-1.png)
 
 ---
 
@@ -64,8 +65,8 @@ Each Transformer layer is extended with:
 
 Visual explanation using Grad-CAM shows MGFormer attends to known AD-affected regions.
 
-![Saliency Map - AD](path/to/saliency_ad.png) <!-- 📌 Insert Figure 5a/c -->
-![Saliency Map - HC](path/to/saliency_hc.png) <!-- 📌 Insert Figure 5b/d -->
+![Saliency Map - AD](image/gradcam_topomap_aut_ad-1.png) <!-- 📌 Insert Figure 5a/c -->
+![Saliency Map - HC](image/gradcam_topomap_aut_hc-1.png) <!-- 📌 Insert Figure 5b/d -->
 
 ---
 
