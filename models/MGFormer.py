@@ -14,20 +14,22 @@ def get_sinusoidal_position_encoding(seq_len, dim, device=None):
     pe[:, 1::2] = torch.cos(positions * div_term)
     return pe
 
-# https://doi.org/10.48550/arXiv.2405.00719
-
+# Deformers attention block, with FFT features
 class Attention(nn.Module):
     def __init__(self, dim, heads=8, dim_head=64, dropout=0.):
         super().__init__()
         inner_dim = dim_head * heads
+        project_out = not (heads == 1 and dim_head == dim)
+
         self.heads = heads
         self.scale = dim_head ** -0.5
         self.to_qkv = nn.Linear(dim, inner_dim * 3, bias=False)
         self.attend = nn.Softmax(dim=-1)
+        
         self.to_out = nn.Sequential(
             nn.Linear(inner_dim, dim),
             nn.Dropout(dropout)
-        )
+        ) if project_out else nn.Identity()
 
     def forward(self, x):
         qkv = self.to_qkv(x).chunk(3, dim=-1)
@@ -83,10 +85,10 @@ class Transformer(nn.Module):
     def forward(self, x):
         dense_features = []
         for attn, ff, cnn in self.layers:
-            x_t = x.transpose(1, 2)               # (B, L, D)
-            x_attn = attn(x_t).transpose(1, 2)    # (B, D, L)
-            x_cg = x_attn + x                     # residual after attention
-            x_fg = cnn(x)                         # local conv
+            x_t = x.transpose(1, 2)
+            x_attn = attn(x_t).transpose(1, 2)
+            x_cg = x_attn + x
+            x_fg = cnn(x)
             fft_feat = self.get_fft_feature(x_fg)
             dense_features.append(fft_feat)
             x_ff = ff(x_cg.transpose(1, 2)).transpose(1, 2)
@@ -102,16 +104,21 @@ class MgTE(nn.Module):
         self.kernel_sizes = [int(sampling_rate * g) for g in granularities]
         self.pool_size = 4
 
+        print(self.kernel_sizes)
+
         self.temporal_branches = nn.ModuleList([
             nn.Sequential(
-                nn.Conv2d(1, num_T, (1, ks), stride=(1, ks // 2), padding=(0, ks // 4)),
+                # CHANGED: Stride is set to kernel_size - 1 and padding is now 0.
+                # A max(1, ...) is used to prevent an invalid stride of 0 if a kernel size is 1.
+                nn.Conv2d(1, num_T, kernel_size=(1, ks), stride=(1, max(1, ks - 1))),
                 nn.LeakyReLU(),
-                nn.BatchNorm2d(num_T)
+                #nn.BatchNorm2d(num_T)
             ) for ks in self.kernel_sizes
         ])
+        self.bn_t = nn.BatchNorm2d(num_T)
 
-        # Shared spatial encoder: 1x1 conv across channels (flattened temporally)
-        self.spatial_conv = nn.Conv2d(num_T, embed_dim, kernel_size=(num_channels, 1))
+        # Shared spatial encoder
+        self.spatial_conv = nn.Conv2d(num_T, embed_dim, kernel_size=(num_channels, 1), stride=1)
         self.activation = nn.LeakyReLU()
         self.bn = nn.BatchNorm2d(embed_dim)
 
@@ -123,16 +130,19 @@ class MgTE(nn.Module):
         branch_outputs = []
 
         for branch in self.temporal_branches:
-            out = branch(x)  # (B, num_T, C, T')
+            out = branch(x)
             out = F.max_pool2d(out, kernel_size=(1, pool), stride=(1, pool))
             branch_outputs.append(out)
 
-        combined = torch.cat(branch_outputs, dim=-1)  # temporal concat
-        s = self.spatial_conv(combined)               # (B, embed_dim, 1, T')
+        #combined = torch.cat(branch_outputs, dim=-1)
+
+        combined = torch.cat(branch_outputs, dim=-1)  # (B, num_T, 1, T_total)
+        combined = self.bn_t(combined) 
+        s = self.spatial_conv(combined)
         s = self.activation(s)
         s = F.max_pool2d(s, kernel_size=(1, max(1, pool // 4)))
         s = self.bn(s)
-        s = s.squeeze(2).permute(0, 2, 1)  # (B, Seq_len, Embed_dim)
+        s = s.squeeze(2).permute(0, 2, 1)
         return s
 
 class MGFormer(nn.Module):
@@ -159,10 +169,10 @@ class MGFormer(nn.Module):
         self.mlp_head = nn.Linear(embed_dim * (depth + 1), num_classes)
 
     def forward(self, x, pool=None):
-        tokens = self.token_encoder(x, pool=pool)  # (B, L, D)
+        tokens = self.token_encoder(x, pool=pool)
         B, L, D = tokens.shape
         pos_emb = get_sinusoidal_position_encoding(L, D, device=x.device)
         tokens = tokens + pos_emb.unsqueeze(0)
-        tokens = tokens.permute(0, 2, 1)  # (B, D, L)
+        tokens = tokens.permute(0, 2, 1)
         transformer_out = self.transformer(tokens)
         return self.mlp_head(transformer_out)
