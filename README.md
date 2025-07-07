@@ -5,6 +5,10 @@
 <!-- ![MGFormer Overview](\image\HFF.pdf) 📌 REPLACE with architecture figure from the paper -->
 
 ---
+## Dataset Link
+- **AUT-AD** -- https://openneuro.org/datasets/ds004504/versions/1.0.8
+- **FSU-AD** -- https://osf.io/s74qf/
+
 
 ## 🔬 Overview
 
