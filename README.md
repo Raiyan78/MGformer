@@ -74,10 +74,4 @@ Visual explanation using Grad-CAM shows MGFormer attends to known AD-affected re
 
 ---
 
-## ⚙️ How to Run
 
-```bash
-git clone https://github.com/Raiyan78/MGformer.git
-cd MGformer
-pip install -r requirements.txt
-python train.py --dataset fsu-ad --model mgformer
