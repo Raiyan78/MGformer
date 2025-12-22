@@ -1,4 +1,4 @@
-# MGFormer 🧠 — Multi-Granular Transformer for EEG-based Alzheimer's Detection
+# MGFormer  — Multi-Granular Transformer for EEG-based Alzheimer's Detection
 
 **MGFormer** is a lightweight hybrid model combining CNN, Transformer, and frequency-domain analysis to classify Alzheimer's Disease from EEG signals. It is optimized for subject-independent setups, enabling real-world applicability.
 
@@ -10,7 +10,7 @@
 - **FSU-AD** -- https://osf.io/s74qf/
 
 
-## 🔬 Overview
+##  Overview
 
 Alzheimer’s Disease (AD) affects brain activity in subtle ways. EEG is a cost-effective and non-invasive modality for early AD detection. MGFormer offers:
 
@@ -20,14 +20,14 @@ Alzheimer’s Disease (AD) affects brain activity in subtle ways. EEG is a cost-
 
 ---
 
-## 🧱 Architecture
+##  Architecture
 
 MGFormer consists of two main components:
 
 ### 1. Multi-Granular Token Encoder (MgTE)
 Extracts temporal features at multiple scales, then applies spatial convolution across EEG channels.
 
-![MgTE Module](image/token%20encoder-1.png) <!-- 📌 Insert Figure 2 from the paper -->
+![MgTE Module](image/token%20encoder-1.png) 
 
 ### 2. Hybrid Feature Fusion (HFF)
 Each Transformer layer is extended with:
@@ -35,11 +35,11 @@ Each Transformer layer is extended with:
 - 1D convolution for fine-grained temporal features
 - FFT feature extraction for spectral context
 
-![HFF Block](image/HFF-1.png) <!-- 📌 Insert Figure 3 from the paper -->
+![HFF Block](image/HFF-1.png) 
 
 ---
 
-## 📊 Performance
+## Performance
 
 ### Datasets:
 - **FSU-AD**: 128Hz EEG, 19 channels, binary AD vs HC
@@ -56,7 +56,7 @@ Each Transformer layer is extended with:
 
 ---
 
-## 🧪 Ablation Studies
+## Ablation Studies
 
 | Variant              | AUT-AD Accuracy | FSU-AD Accuracy |
 |----------------------|------------------|------------------|
@@ -65,7 +65,7 @@ Each Transformer layer is extended with:
 
 ---
 
-## 🖼️ Saliency Maps
+## Saliency Maps
 
 Visual explanation using Grad-CAM shows MGFormer attends to known AD-affected regions.
 
